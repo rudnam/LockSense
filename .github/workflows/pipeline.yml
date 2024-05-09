@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, closed]
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
 
 jobs:
   CI:
