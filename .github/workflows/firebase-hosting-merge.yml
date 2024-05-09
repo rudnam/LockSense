@@ -21,3 +21,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
           channelId: live
           projectId: locksense-c23a8
+          entryPoint: "./app"
