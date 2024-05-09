@@ -48,7 +48,3 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
           projectId: locksense-c23a8
           entryPoint: "./app"
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
