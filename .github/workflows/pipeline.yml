@@ -60,3 +60,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
           projectId: locksense-c23a8
           entryPoint: "./app"
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
