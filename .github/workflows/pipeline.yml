@@ -50,7 +50,7 @@ jobs:
         if: always()
         with:
           name: locksense-${{ github.sha }}
-          path: /app/build/app/outputs/flutter-apk/app-release.apk
+          path: /build/app/outputs/flutter-apk/app-release.apk
       - name: Build Web
         run: flutter build web
       - name: Deploy to Firebase
