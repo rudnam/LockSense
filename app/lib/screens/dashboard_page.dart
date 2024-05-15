@@ -17,16 +17,19 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    firebaseService.initialize();
     firebaseService.addLedStateListener((ledState) {
-      setState(() {
-        _ledState = int.parse(ledState);
-      });
+      if (mounted) {
+        setState(() {
+          _ledState = int.parse(ledState);
+        });
+      }
     });
     firebaseService.addPhotoresistorStateListener((photoresistorState) {
-      setState(() {
-        _photoresistorState = int.parse(photoresistorState);
-      });
+      if (mounted) {
+        setState(() {
+          _photoresistorState = int.parse(photoresistorState);
+        });
+      }
     });
   }
 
