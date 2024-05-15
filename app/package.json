@@ -37,7 +37,7 @@
         {
           "assets": [
             {
-              "path": "/**/app-release.apk",
+              "path": "**/app-release.apk",
               "label": "Release APK"
             }
           ]
