@@ -2,7 +2,6 @@ name: CI-CD pipeline
 
 on:
   pull_request:
-    branches: [main]
     types: [opened, synchronize, closed]
 permissions:
   checks: write
@@ -29,7 +28,7 @@ jobs:
 
   CD:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.merged == true }}
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.merged == true && github.ref == 'refs/heads/main' }}
     needs: [CI]
     defaults:
       run:
