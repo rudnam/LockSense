@@ -47,10 +47,18 @@ jobs:
         run: flutter pub get
       - name: Build APK
         run: flutter build apk --release
-      # - name: Deploy to Firebase
-      #   uses: FirebaseExtended/action-hosting-deploy@v0
-      #   with:
-      #     repoToken: ${{ secrets.GITHUB_TOKEN }}
-      #     firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
-      #     projectId: locksense-c23a8
-      #     entryPoint: "./app"
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: locksense-${{ github.sha }}
+          path: /app/build/app/outputs/flutter-apk/app-release.apk
+      - name: Build Web
+        run: flutter build web
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
+          projectId: locksense-c23a8
+          entryPoint: "./app"
