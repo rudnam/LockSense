@@ -1,9 +1,32 @@
 {
-  "database": {
-    "rules": "database.rules.json"
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "locksense-c23a8",
+          "appId": "1:903369669754:android:b9d8b7acd111f702b24fc3",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "locksense-c23a8",
+          "configurations": {
+            "android": "1:903369669754:android:b9d8b7acd111f702b24fc3",
+            "ios": "1:903369669754:ios:4405c0567e8bf739b24fc3",
+            "macos": "1:903369669754:ios:4405c0567e8bf739b24fc3",
+            "web": "1:903369669754:web:56f2bf16f36cc053b24fc3",
+            "windows": "1:903369669754:web:eb5c7b3fd1a75e05b24fc3"
+          }
+        }
+      }
+    }
   },
   "hosting": {
-    "public": "build",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "source": ".",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "frameworksBackend": {
+      "region": "asia-east1"
+    }
   }
 }
