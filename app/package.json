@@ -37,7 +37,7 @@
         {
           "assets": [
             {
-              "path": "app/build/app/outputs/flutter-apk/app-release.apk",
+              "path": "build/app/outputs/flutter-apk/app-release.apk",
               "label": "Release APK"
             }
           ]
