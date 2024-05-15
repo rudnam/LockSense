@@ -67,7 +67,10 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
           ),
-          YourWidget(states: states, handleSwitchClick: handleSwitchClick)
+          ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: YourWidget(
+                  states: states, handleSwitchClick: handleSwitchClick))
         ],
       ),
     );

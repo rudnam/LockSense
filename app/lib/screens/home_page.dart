@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyMedium,
               children: [
                 TextSpan(
                     text: 'LockSense',
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyMedium,
               children: [
                 const TextSpan(
                     text: 'Forgot your keys? No problem! You can use the '),
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyMedium,
               children: const [
                 TextSpan(
                     text:
