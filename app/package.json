@@ -1,6 +1,7 @@
 {
   "name": "locksense",
   "version": "1.0.0",
+  "private": true,
   "description": "A new Flutter project.",
   "main": "index.js",
   "directories": {
@@ -27,6 +28,21 @@
         "name": "alpha",
         "prerelease": true
       }
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            {
+              "path": "/app/build/app/outputs/flutter-apk/app-release.apk",
+              "label": "Release APK"
+            }
+          ]
+        }
+      ]
     ]
   }
 }
