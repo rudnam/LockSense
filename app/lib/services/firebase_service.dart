@@ -1,5 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
@@ -15,10 +18,16 @@ class FirebaseService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initNotifications() async {
-    await _firebaseMessaging.requestPermission();
-    final fCMToken = await _firebaseMessaging.getToken();
-    await _firebaseDatabase.ref().child("FCMToken").set(fCMToken);
-    FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+    if (kIsWeb) return;
+
+    if (Platform.isAndroid) {
+      await _firebaseMessaging.requestPermission();
+      final fCMToken = await _firebaseMessaging.getToken();
+      await _firebaseDatabase.ref().child("FCMToken").set(fCMToken);
+      FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+    } else {
+      print("This platform doesn't support push notifications.");
+    }
   }
 
   Future<void> writeData(String path, dynamic newData) async {
