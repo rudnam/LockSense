@@ -41,3 +41,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CI_TOKEN }}
         run: npx semantic-release
+      - name: Deploy to Live Channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.CI_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
+          projectId: locksense-c23a8
+          channelId: live
+          entryPoint: "./app"
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
