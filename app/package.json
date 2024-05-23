@@ -16,22 +16,44 @@
   "release": {
     "branches": [
       "main",
-      "+([0-9])?(.{+([0-9]),x}).x",
-      "master",
-      "next",
-      "next-major",
       {
-        "name": "beta",
-        "prerelease": true
-      },
-      {
-        "name": "alpha",
+        "name": "dev",
         "prerelease": true
       }
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
+      [
+        "@droidsolutions-oss/semantic-release-update-file",
+        {
+          "files": [
+            {
+              "path": [
+                "pubspec.yaml"
+              ],
+              "type": "flutter",
+              "branches": [
+                "main"
+              ]
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "flutter build apk --release"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "pubspec.yaml"
+          ]
+        }
+      ],
       [
         "@semantic-release/github",
         {
@@ -44,5 +66,10 @@
         }
       ]
     ]
+  },
+  "devDependencies": {
+    "@droidsolutions-oss/semantic-release-update-file": "^1.4.0",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1"
   }
 }

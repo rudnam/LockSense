@@ -32,9 +32,9 @@ jobs:
           channel: stable
           flutter-version: 3.22.0
       - name: Install dependencies
+        run: npm install
+      - name: Get dependencies
         run: flutter pub get
-      - name: Build APK
-        run: flutter build apk --release
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
