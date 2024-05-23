@@ -13,8 +13,6 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
 
 class FirebaseService {
   final FirebaseDatabase _firebaseDatabase = FirebaseDatabase.instance;
-  late DatabaseReference ledStateRef;
-  late DatabaseReference photoresistorStateRef;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initNotifications() async {
