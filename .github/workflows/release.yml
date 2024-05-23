@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
 permissions:
   contents: read
 
@@ -21,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,5 +39,5 @@ jobs:
         run: flutter pub get
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CI_TOKEN }}
         run: npx semantic-release
