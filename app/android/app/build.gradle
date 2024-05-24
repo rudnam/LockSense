@@ -54,7 +54,7 @@ android {
             signingConfig = signingConfigs.debug
             applicationVariants.all { variant ->
                 variant.outputs.all {
-                    outputFileName = "locksense-v${flutterVersionName}.apk"
+                    outputFileName = "locksense-${flutterVersionName}.apk"
                 }
             }
         }
