@@ -34,7 +34,8 @@
               ],
               "type": "flutter",
               "branches": [
-                "main"
+                "main",
+                "dev"
               ]
             }
           ]
