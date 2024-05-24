@@ -28,7 +28,7 @@ jobs:
 
   CD:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.merged == true && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.merged == true && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') }}
     needs: [CI]
     defaults:
       run:
@@ -52,11 +52,12 @@ jobs:
           path: app/build/app/outputs/flutter-apk/app-release.apk
       - name: Build Web
         run: flutter build web
-      - name: Deploy to Firebase
+      - name: Deploy to Preview Channel
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOCKSENSE_C23A8 }}
+          expires: 30d
           projectId: locksense-c23a8
           entryPoint: "./app"
         env:
