@@ -29,12 +29,11 @@ export const handleLockUpdate = onValueUpdated(
       logger.log(
         `Detected lock state change for ${lockId}: ${oldValue} -> ${newValue}`
       );
-      const lockName = await utils.getDatabase(`/locks/${lockId}/name`);
-
-      await utils.sendNotification({
-        title: `${lockName}'s state changed!`,
-        body: `The lock's state is now ${newValue}`,
-      });
+      const lockData = (await utils.getDatabase(`/locks/${lockId}`)) as {
+        [key: string]: unknown;
+      };
+      const lockName = lockData["name"] as string;
+      const lockOwnerId = lockData["ownerId"] as string;
 
       if (fromApp) {
         mqttService.publish(`locks/${lockId}/state`, newValue.toString());
@@ -49,9 +48,21 @@ export const handleLockUpdate = onValueUpdated(
           break;
         case "unlocked":
           clearTimer("unlock", lockId);
+          if (oldValue !== "locking") {
+            await utils.sendNotification(lockOwnerId, {
+              title: `${lockName}'s state changed!`,
+              body: `${lockName} is now ${newValue}`,
+            });
+          }
           break;
         case "locked":
           clearTimer("lock", lockId);
+          if (oldValue !== "unlocking") {
+            await utils.sendNotification(lockOwnerId, {
+              title: `${lockName}'s state changed!`,
+              body: `${lockName} is now ${newValue}`,
+            });
+          }
           break;
         default:
           logger.error(`Received undefined lock state: ${newValue}`);

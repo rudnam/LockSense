@@ -32,6 +32,17 @@ class FirebaseService {
     await _firebaseDatabase.ref().child(path).set(newData);
   }
 
+  Future<Object?> getData(String path) async {
+    DataSnapshot snapshot = await _firebaseDatabase.ref().child(path).get();
+
+    if (snapshot.exists) {
+      return snapshot.value;
+    } else {
+      print('No data available.');
+      return null;
+    }
+  }
+
   void addLockStateListener(String lockId, void Function(String) listener) {
     _firebaseDatabase.ref('locks/$lockId/state').onValue.listen((event) {
       final lockState = event.snapshot.value.toString();

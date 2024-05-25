@@ -38,7 +38,6 @@ class _DashboardPageState extends State<DashboardPage> {
         'id': lockId,
         'ownerUID': 'demo-user',
         'state': _lockState,
-        'icon': Icons.lock
       },
     ];
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:locksense/screens/dashboard_page.dart';
 import 'package:locksense/screens/home_page.dart';
+import 'package:locksense/screens/notification_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,6 +21,8 @@ class _MainScreenState extends State<MainScreen> {
         page = const HomePage();
       case 1:
         page = const DashboardPage();
+      case 2:
+        page = const NotificationPage();
       default:
         throw UnimplementedError('no widget for $currentPageIndex');
     }
@@ -51,6 +54,11 @@ class _MainScreenState extends State<MainScreen> {
             selectedIcon: Icon(Icons.dashboard),
             icon: Icon(Icons.dashboard_outlined),
             label: 'Dashboard',
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.notifications),
+            icon: Icon(Icons.notifications_outlined),
+            label: 'Notifications',
           ),
         ],
       ),
