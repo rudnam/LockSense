@@ -49,4 +49,25 @@ class FirebaseService {
       listener(lockState);
     });
   }
+
+  void addNotificationListener(
+      String userId, void Function(List<Map<String, dynamic>>?) listener) {
+    _firebaseDatabase
+        .ref('users/$userId/notifications')
+        .onValue
+        .listen((event) {
+      final notifications = event.snapshot.value;
+      List<Map<String, dynamic>> parsedNotifications = [];
+
+      if (notifications != null && notifications is Map) {
+        notifications.forEach((key, value) {
+          if (value is Map) {
+            parsedNotifications.add(Map<String, dynamic>.from(value));
+          }
+        });
+      }
+
+      listener(parsedNotifications);
+    });
+  }
 }

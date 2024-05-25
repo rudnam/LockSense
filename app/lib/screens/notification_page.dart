@@ -12,7 +12,7 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   late FirebaseService firebaseService;
-  List<Map<String, dynamic>>? notifications;
+  List<Map<String, dynamic>>? _notifications;
   bool isLoading = true;
   String userId = "demo-user";
 
@@ -20,27 +20,14 @@ class _NotificationPageState extends State<NotificationPage> {
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    fetchNotifications();
-  }
-
-  Future<void> fetchNotifications() async {
-    Object? data = await firebaseService.getData('users/$userId/notifications');
-    if (data != null && data is Map) {
-      List<Map<String, dynamic>> parsedNotifications = [];
-      data.forEach((key, value) {
-        if (value is Map) {
-          parsedNotifications.add(Map<String, dynamic>.from(value));
-        }
-      });
-      setState(() {
-        notifications = parsedNotifications;
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    firebaseService.addNotificationListener(userId, (notifications) {
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+          isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -64,12 +51,12 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
               isLoading
                   ? CircularProgressIndicator()
-                  : notifications != null
+                  : _notifications != null
                       ? Expanded(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 400),
-                            child:
-                                NotificationList(notifications: notifications!),
+                            child: NotificationList(
+                                notifications: _notifications!),
                           ),
                         )
                       : Text('No notifications available'),
