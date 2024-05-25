@@ -25,13 +25,22 @@ client.on("message", async (topic, message) => {
   const match = topic.match(/^locks\/([^/]+)\/state$/);
   if (match) {
     const lockId = match[1];
-    const oldValue = await utils.getDatabase(`locks/${lockId}/state`);
+    const oldValue = (await utils.getDatabase(
+      `locks/${lockId}/state`
+    )) as string;
     const newValue = message.toString();
-    const valueChanged =
-      (typeof oldValue === "string" || oldValue instanceof String) &&
-      oldValue !== newValue;
 
-    if (valueChanged) {
+    if (
+      !utils.isValidLockState(oldValue) ||
+      !utils.isValidLockState(newValue)
+    ) {
+      logger.error(
+        `Invalid lock state detected. oldValue: ${oldValue}, newValue: ${newValue}`
+      );
+      return;
+    }
+
+    if (oldValue !== newValue) {
       logger.log(
         `MQTT message setting state from ${oldValue} to ${newValue} for lock ${lockId}.`
       );

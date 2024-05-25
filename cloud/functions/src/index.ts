@@ -21,6 +21,17 @@ export const handleLockUpdate = onValueUpdated(
     const snapshotAfter = event.data.after;
     const oldValue: string = snapshotBefore.val();
     const newValue: string = snapshotAfter.val();
+
+    if (
+      !utils.isValidLockState(oldValue) ||
+      !utils.isValidLockState(newValue)
+    ) {
+      logger.error(
+        `Invalid lock state detected. oldValue: ${oldValue}, newValue: ${newValue}`
+      );
+      return;
+    }
+
     const fromApp =
       (oldValue === "unlocked" && newValue === "locking") ||
       (oldValue === "locked" && newValue === "unlocking");
