@@ -16,26 +16,41 @@ class StateList extends StatelessWidget {
         final state = states[index];
         return ListTile(
           leading: Icon(
-            state['icon'],
-            color: state['state'] == "locked" ? Colors.green : null,
+            state['state'] == "locked" || state['state'] == "unlocking"
+                ? Icons.lock
+                : Icons.lock_open,
+            color: Colors.green,
           ),
           title: Text('${state['name']} State: ${state['state']}'),
-          trailing: TextButton(
-            onPressed:
-                (state['state'] == 'locked' || state['state'] == 'unlocked')
-                    ? () {
-                        handleButtonClick(state);
-                      }
-                    : null,
-            child: Text(
-              state['state'] == 'locked' ? 'Unlock' : 'Lock',
-              style: TextStyle(
-                color:
-                    (state['state'] == 'locked' || state['state'] == 'unlocked')
-                        ? Colors.blue
-                        : Colors.grey,
-              ),
-            ),
+          trailing: SizedBox(
+            width: 80,
+            child: state['state'] == 'locking' || state['state'] == 'unlocking'
+                ? const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : Center(
+                    child: TextButton(
+                      onPressed: (state['state'] == 'locked' ||
+                              state['state'] == 'unlocked')
+                          ? () {
+                              handleButtonClick(state);
+                            }
+                          : null,
+                      child: Text(
+                        state['state'] == 'locked' ? 'Unlock' : 'Lock',
+                        style: TextStyle(
+                          color: (state['state'] == 'locked' ||
+                                  state['state'] == 'unlocked')
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
           ),
         );
       },
