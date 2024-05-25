@@ -32,17 +32,10 @@ class FirebaseService {
     await _firebaseDatabase.ref().child(path).set(newData);
   }
 
-  void addLedStateListener(void Function(String) listener) {
-    _firebaseDatabase.ref('led/state').onValue.listen((event) {
-      final ledState = event.snapshot.value.toString();
-      listener(ledState);
-    });
-  }
-
-  void addPhotoresistorStateListener(void Function(String) listener) {
-    _firebaseDatabase.ref('photoresistor/state').onValue.listen((event) {
-      final photoresistorState = event.snapshot.value.toString();
-      listener(photoresistorState);
+  void addLockStateListener(String lockId, void Function(String) listener) {
+    _firebaseDatabase.ref('locks/$lockId/state').onValue.listen((event) {
+      final lockState = event.snapshot.value.toString();
+      listener(lockState);
     });
   }
 }

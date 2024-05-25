@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class StateList extends StatelessWidget {
   final List<Map<String, dynamic>> states;
-  final Function(Map<String, dynamic>) handleSwitchClick;
+  final Function(Map<String, dynamic>) handleButtonClick;
 
   const StateList(
-      {super.key, required this.states, required this.handleSwitchClick});
+      {super.key, required this.states, required this.handleButtonClick});
 
   @override
   Widget build(BuildContext context) {
@@ -16,16 +16,41 @@ class StateList extends StatelessWidget {
         final state = states[index];
         return ListTile(
           leading: Icon(
-            state['icon'],
-            color: state['state'] == 1 ? Colors.green : null,
+            state['state'] == "locked" || state['state'] == "unlocking"
+                ? Icons.lock
+                : Icons.lock_open,
+            color: Colors.green,
           ),
-          title: Text(
-              '${state['name']} State: ${state['state'] == -1 ? '...' : state['state'] == 1 ? 'On' : 'Off'}'),
-          trailing: Switch(
-            value: state['state'] == 1,
-            onChanged: (bool value) {
-              handleSwitchClick(state);
-            },
+          title: Text('${state['name']} State: ${state['state']}'),
+          trailing: SizedBox(
+            width: 80,
+            child: state['state'] == 'locking' || state['state'] == 'unlocking'
+                ? const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : Center(
+                    child: TextButton(
+                      onPressed: (state['state'] == 'locked' ||
+                              state['state'] == 'unlocked')
+                          ? () {
+                              handleButtonClick(state);
+                            }
+                          : null,
+                      child: Text(
+                        state['state'] == 'locked' ? 'Unlock' : 'Lock',
+                        style: TextStyle(
+                          color: (state['state'] == 'locked' ||
+                                  state['state'] == 'unlocked')
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
           ),
         );
       },

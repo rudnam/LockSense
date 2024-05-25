@@ -11,24 +11,20 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   late FirebaseService firebaseService;
-  late int _ledState = -1;
-  late int _photoresistorState = -1;
+  final userId = "demo-user";
+  final lockId = "-NycrH2cYavPQDTVmfKp";
+  List<Map<String, dynamic>> states = [];
+
+  late String _lockState = "...";
 
   @override
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    firebaseService.addLedStateListener((ledState) {
+    firebaseService.addLockStateListener(lockId, (lockState) {
       if (mounted) {
         setState(() {
-          _ledState = int.parse(ledState);
-        });
-      }
-    });
-    firebaseService.addPhotoresistorStateListener((photoresistorState) {
-      if (mounted) {
-        setState(() {
-          _photoresistorState = int.parse(photoresistorState);
+          _lockState = lockState;
         });
       }
     });
@@ -36,24 +32,22 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> states = [
+    List<Map<String, dynamic>> lockStates = [
       {
-        'name': 'Led',
-        'dbPath': 'led/state',
-        'state': _ledState,
-        'icon': Icons.lightbulb
-      },
-      {
-        'name': 'Photoresistor',
-        'dbPath': 'photoresistor/state',
-        'state': _photoresistorState,
-        'icon': Icons.cable
+        'name': 'Lock 1',
+        'id': lockId,
+        'ownerUID': 'demo-user',
+        'state': _lockState,
+        'icon': Icons.lock
       },
     ];
 
-    void handleSwitchClick(Map<String, dynamic> state) async {
-      int newState = state['state'] == 0 ? 1 : 0;
-      await firebaseService.writeData(state['dbPath'], newState);
+    void handleButtonClick(Map<String, dynamic> state) async {
+      String newState = state['state'] == 'locked' ? 'unlocking' : 'locking';
+      setState(() {
+        state['state'] = newState;
+      });
+      await firebaseService.writeData("locks/${state['id']}/state", newState);
     }
 
     return Center(
@@ -74,7 +68,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: StateList(
-                  states: states, handleSwitchClick: handleSwitchClick))
+                  states: lockStates, handleButtonClick: handleButtonClick))
         ],
       ),
     );
