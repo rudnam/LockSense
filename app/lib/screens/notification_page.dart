@@ -62,15 +62,15 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
               Row(
                 children: [
-                  Spacer(),
+                  const Spacer(),
                   TextButton(
                     onPressed: _clearNotifications,
-                    child: Text('Clear'),
+                    child: const Text('Clear'),
                   ),
                 ],
               ),
               isLoading
-                  ? CircularProgressIndicator()
+                  ? const CircularProgressIndicator()
                   : _notifications != null && _notifications!.isNotEmpty
                       ? Expanded(
                           child: ConstrainedBox(
@@ -79,7 +79,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                 notifications: _notifications!),
                           ),
                         )
-                      : Text('No notifications available'),
+                      : const Text('No notifications available'),
             ],
           ),
         );
