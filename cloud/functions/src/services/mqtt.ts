@@ -27,6 +27,7 @@ client.on("message", async (topic, message) => {
     const lockId = match[1];
     const oldValue = await utils.getDatabase(`locks/${lockId}/state`);
     const newValue = message.toString();
+
     if (
       (typeof oldValue === "string" || oldValue instanceof String) &&
       oldValue !== newValue
