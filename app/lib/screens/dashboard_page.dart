@@ -24,10 +24,24 @@ class _DashboardPageState extends State<DashboardPage> {
     firebaseService.addLockStateListener(lockId, (lockState) {
       if (mounted) {
         setState(() {
+          if (_lockState == 'unlocking' && lockState == 'locked') {
+            _showSnackbar("Unlock attempt failed.");
+          } else if (_lockState == 'locking' && lockState == 'unlocked') {
+            _showSnackbar("Lock attempt failed.");
+          }
           _lockState = lockState;
         });
       }
     });
+  }
+
+  void _showSnackbar(String content) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(content),
+        duration: const Duration(seconds: 5),
+      ),
+    );
   }
 
   @override
@@ -38,7 +52,6 @@ class _DashboardPageState extends State<DashboardPage> {
         'id': lockId,
         'ownerUID': 'demo-user',
         'state': _lockState,
-        'icon': Icons.lock
       },
     ];
 

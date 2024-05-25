@@ -32,10 +32,48 @@ class FirebaseService {
     await _firebaseDatabase.ref().child(path).set(newData);
   }
 
+  Future<Object?> getData(String path) async {
+    DataSnapshot snapshot = await _firebaseDatabase.ref().child(path).get();
+
+    if (snapshot.exists) {
+      return snapshot.value;
+    } else {
+      print('No data available.');
+      return null;
+    }
+  }
+
   void addLockStateListener(String lockId, void Function(String) listener) {
     _firebaseDatabase.ref('locks/$lockId/state').onValue.listen((event) {
       final lockState = event.snapshot.value.toString();
       listener(lockState);
     });
+  }
+
+  void addNotificationListener(
+      String userId, void Function(List<Map<String, dynamic>>?) listener) {
+    _firebaseDatabase
+        .ref('users/$userId/notifications')
+        .onValue
+        .listen((event) {
+      final notifications = event.snapshot.value;
+      List<Map<String, dynamic>> parsedNotifications = [];
+
+      if (notifications != null && notifications is Map) {
+        notifications.forEach((key, value) {
+          if (value is Map) {
+            parsedNotifications.add(Map<String, dynamic>.from(value));
+          }
+        });
+      }
+
+      listener(parsedNotifications);
+    });
+  }
+
+  Future<void> clearNotifications(String userId) async {
+    DatabaseReference ref =
+        _firebaseDatabase.ref('users/$userId/notifications');
+    await ref.remove();
   }
 }
