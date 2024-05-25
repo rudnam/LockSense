@@ -5,10 +5,10 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 import mqttService from "./services/mqtt";
-import timerService from "./services/timer";
+import timerService, { timerType } from "./services/timer";
 import utils from "./utils";
 
-const lockTimeout = 30; // Time (in seconds) to wait for locking/unlocking acknowledgement
+const lockTimeout = 15; // Time (in seconds) to wait for locking/unlocking acknowledgement
 
 setGlobalOptions({ region: "asia-southeast1" });
 admin.initializeApp();
@@ -21,66 +21,37 @@ export const handleLockUpdate = onValueUpdated(
     const snapshotAfter = event.data.after;
     const oldValue: string = snapshotBefore.val();
     const newValue: string = snapshotAfter.val();
+    const fromApp =
+      (oldValue === "unlocked" && newValue === "locking") ||
+      (oldValue === "locked" && newValue === "unlocking");
 
     if (oldValue !== newValue) {
-      logger.log("Detected lock state change:", oldValue, "->", newValue);
+      logger.log(
+        `Detected lock state change for ${lockId}: ${oldValue} -> ${newValue}`
+      );
+      const lockName = await utils.getDatabase(`/locks/${lockId}/name`);
+
       await utils.sendNotification({
-        title: "The Lock state changed!",
-        body: `The Lock's state is now ${newValue}`,
+        title: `${lockName}'s state changed!`,
+        body: `The lock's state is now ${newValue}`,
       });
 
-      // Only publish if change came from the app
-      if (
-        (oldValue === "unlocked" && newValue === "locking") ||
-        (oldValue === "locked" && newValue === "unlocking")
-      ) {
+      if (fromApp) {
         mqttService.publish(`locks/${lockId}/state`, newValue.toString());
       }
 
       switch (newValue) {
         case "unlocking":
-          {
-            const timer = setTimeout(async () => {
-              logger.log(
-                `Unlock confirmation not received for lock ${lockId}. Reverting to locked state.`
-              );
-              mqttService.publish(`locks/${lockId}/state`, "locked");
-              timerService.remove("unlock", lockId);
-            }, lockTimeout * 1000);
-            logger.log("Starting timer for unlocked state...");
-            timerService.set("unlock", lockId, timer);
-          }
+          startTimer("unlock", lockId);
           break;
         case "locking":
-          {
-            const timer = setTimeout(async () => {
-              logger.log(
-                `Lock confirmation not received for lock ${lockId}. Reverting to unlocked state.`
-              );
-              mqttService.publish(`locks/${lockId}/state`, "unlocked");
-              timerService.remove("lock", lockId);
-            }, lockTimeout * 1000);
-            logger.log("Starting timer for locked state...");
-            timerService.set("lock", lockId, timer);
-          }
+          startTimer("lock", lockId);
           break;
         case "unlocked":
-          {
-            if (timerService.has("unlock", lockId)) {
-              logger.log("Clearing timer for unlocked state");
-              clearTimeout(timerService.get("unlock", lockId));
-              timerService.remove("unlock", lockId);
-            }
-          }
+          clearTimer("unlock", lockId);
           break;
         case "locked":
-          {
-            if (timerService.has("lock", lockId)) {
-              logger.log("Clearing timer for locked state");
-              clearTimeout(timerService.get("lock", lockId));
-              timerService.remove("lock", lockId);
-            }
-          }
+          clearTimer("lock", lockId);
           break;
         default:
           logger.error(`Received undefined lock state: ${newValue}`);
@@ -88,3 +59,32 @@ export const handleLockUpdate = onValueUpdated(
     }
   }
 );
+
+const startTimer = (type: timerType, lockId: string) => {
+  const timer = setTimeout(async () => {
+    logger.log(
+      `${utils.capitalize(
+        type
+      )} confirmation not received in time for lock ${lockId}. Cancelling ${type} attempt.`
+    );
+    mqttService.publish(
+      `locks/${lockId}/state`,
+      type === "unlock" ? "locked" : "unlocked"
+    );
+    timerService.remove(type, lockId);
+  }, lockTimeout * 1000);
+  logger.log(`Starting ${type} attempt for lock ${lockId}...`);
+  timerService.set(type, lockId, timer);
+};
+
+const clearTimer = (type: timerType, lockId: string) => {
+  if (timerService.has(type, lockId)) {
+    logger.log(
+      `${utils.capitalize(
+        type
+      )} confirmation received. Clearing timer for ${type}.`
+    );
+    clearTimeout(timerService.get(type, lockId));
+    timerService.remove(type, lockId);
+  }
+};

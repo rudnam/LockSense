@@ -18,25 +18,27 @@ client.on("connect", () => {
 });
 
 client.on("message", async (topic, message) => {
-  logger.log("Received an MQTT message");
-  logger.log("topic is", topic);
-  logger.log("message is", message.toString());
+  logger.log(
+    `Received an MQTT message. Topic is ${topic}. Message is ${message.toString()}`
+  );
 
   const match = topic.match(/^locks\/([^/]+)\/state$/);
   if (match) {
     const lockId = match[1];
     const oldValue = await utils.getDatabase(`locks/${lockId}/state`);
     const newValue = message.toString();
-
-    if (
+    const valueChanged =
       (typeof oldValue === "string" || oldValue instanceof String) &&
-      oldValue !== newValue
-    ) {
-      logger.log(`MQTT message wants to set from ${oldValue} to ${newValue}.`);
+      oldValue !== newValue;
+
+    if (valueChanged) {
+      logger.log(
+        `MQTT message setting state from ${oldValue} to ${newValue} for lock ${lockId}.`
+      );
       await utils.setDatabase(`/locks/${lockId}/state`, newValue);
     }
   } else {
-    logger.log("Did nothing.");
+    logger.log("Regex did not match. Do nothing.");
   }
 });
 

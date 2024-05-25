@@ -8,12 +8,10 @@ const getDatabase = async (path: string) => {
       "value",
       (snapshot) => {
         const value = snapshot.val();
-        logger.log(`Successfully read db path "${path}" with value ${value}`);
-
         resolve(value);
       },
       (errorObject) => {
-        logger.error(`The read failed: ${errorObject.message}.`);
+        logger.error(`Get database failed: ${errorObject.message}.`);
         reject(errorObject);
       }
     );
@@ -23,9 +21,7 @@ const getDatabase = async (path: string) => {
 const setDatabase = async (path: string, value: unknown) => {
   const ref = admin.database().ref(path);
   return ref.set(value, (err) => {
-    if (!err) {
-      logger.log(`Successfully updated db path "${path}" with value ${value}`);
-    } else {
+    if (err) {
       logger.error(`Set database failed: ${err.message}.`);
     }
   });
@@ -50,8 +46,13 @@ const sendNotification = async (information: {
   );
 };
 
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 export default {
   getDatabase,
   setDatabase,
   sendNotification,
+  capitalize,
 };

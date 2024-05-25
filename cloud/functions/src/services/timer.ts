@@ -1,7 +1,7 @@
 const unlockTimers = new Map();
 const lockTimers = new Map();
 
-type timerType = "lock" | "unlock";
+export type timerType = "lock" | "unlock";
 
 const get = (type: timerType, key: unknown) => {
   return type === "unlock" ? unlockTimers.get(key) : lockTimers.get(key);
