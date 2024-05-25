@@ -70,4 +70,10 @@ class FirebaseService {
       listener(parsedNotifications);
     });
   }
+
+  Future<void> clearNotifications(String userId) async {
+    DatabaseReference ref =
+        _firebaseDatabase.ref('users/$userId/notifications');
+    await ref.remove();
+  }
 }

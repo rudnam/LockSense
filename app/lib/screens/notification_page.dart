@@ -30,6 +30,17 @@ class _NotificationPageState extends State<NotificationPage> {
     });
   }
 
+  void _clearNotifications() async {
+    setState(() {
+      isLoading = true;
+    });
+    await firebaseService.clearNotifications(userId);
+    setState(() {
+      _notifications = [];
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -38,7 +49,7 @@ class _NotificationPageState extends State<NotificationPage> {
           child: Column(
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                padding: const EdgeInsets.only(top: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -49,9 +60,18 @@ class _NotificationPageState extends State<NotificationPage> {
                   ],
                 ),
               ),
+              Row(
+                children: [
+                  Spacer(),
+                  TextButton(
+                    onPressed: _clearNotifications,
+                    child: Text('Clear'),
+                  ),
+                ],
+              ),
               isLoading
                   ? CircularProgressIndicator()
-                  : _notifications != null
+                  : _notifications != null && _notifications!.isNotEmpty
                       ? Expanded(
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 400),
