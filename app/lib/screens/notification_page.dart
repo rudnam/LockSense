@@ -60,14 +60,17 @@ class _NotificationPageState extends State<NotificationPage> {
                   ],
                 ),
               ),
-              Row(
-                children: [
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _clearNotifications,
-                    child: const Text('Clear'),
-                  ),
-                ],
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: _clearNotifications,
+                      child: const Text('Clear'),
+                    ),
+                  ],
+                ),
               ),
               isLoading
                   ? const CircularProgressIndicator()
