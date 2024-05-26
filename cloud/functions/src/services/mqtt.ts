@@ -1,15 +1,17 @@
 import * as mqtt from "mqtt";
 import * as logger from "firebase-functions/logger";
+import { defineString } from "firebase-functions/params";
 
 type QoS = 0 | 1 | 2;
 
-const client = mqtt.connect(
-  "tls://bd32be4c22d54fb2ba2fef3f2258929b.s1.eu.hivemq.cloud:8883",
-  {
-    username: "admin",
-    password: "#5%y*DefsiuqRw",
-  }
-);
+const mqttBrokerUrl = defineString("MQTT_BROKER_URL");
+const mqttUsername = defineString("MQTT_USERNAME");
+const mqttPassword = defineString("MQTT_PASSWORD");
+
+const client = mqtt.connect(mqttBrokerUrl.value(), {
+  username: mqttUsername.value(),
+  password: mqttPassword.value(),
+});
 
 const subscribe = (topic: string) => {
   client.subscribe(topic, (err) => {
