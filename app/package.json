@@ -74,7 +74,8 @@
               "to": "dev"
             }
           ],
-          "clearWorkspace": true
+          "clearWorkspace": true,
+          "forcePush": true
         }
       ]
     ]
