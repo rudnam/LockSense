@@ -7,22 +7,46 @@ import './firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseService().initNotifications();
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
+  Future<void> _initializeFirebase() async {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    await FirebaseService().initNotifications();
+  }
+
+@override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LockSense',
-      theme: AppTheme.themeData,
-      darkTheme: AppTheme.darkThemeData,
-      themeMode: ThemeMode.system,
-      home: const AuthPage(),
+    return FutureBuilder(
+      future: _initializeFirebase(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(child: Text('Error initializing Firebase')),
+            ),
+          );
+        } else {
+          return MaterialApp(
+            title: 'LockSense',
+            theme: AppTheme.themeData,
+            darkTheme: AppTheme.darkThemeData,
+            themeMode: ThemeMode.system,
+            home: const AuthPage(),
+          );
+        }
+      },
     );
   }
 }
