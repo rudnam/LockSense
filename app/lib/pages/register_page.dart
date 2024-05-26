@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:locksense/services/auth_service.dart';
 import 'package:locksense/widgets/my_text_field.dart';
@@ -169,10 +168,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: TextButton.icon(
-                        onPressed: () => !kIsWeb
-                            ? AuthService().signInWithGoogle()
-                            : showErrorMessage(
-                                "Signing in via Google is currently unavailable on web."),
+                        onPressed: () => AuthService().signInWithGoogle(),
                         icon: Image.asset(
                           'assets/images/google-logo.png',
                           height: 24.0,
