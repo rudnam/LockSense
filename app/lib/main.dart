@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:locksense/pages/auth_page.dart';
 import 'package:locksense/services/firebase_service.dart';
-import '../screens/main_screen.dart';
 import './theme/style.dart';
 import './firebase_options.dart';
 
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.themeData,
       darkTheme: AppTheme.darkThemeData,
       themeMode: ThemeMode.system,
-      home: const MainScreen(),
+      home: const AuthPage(),
     );
   }
 }
