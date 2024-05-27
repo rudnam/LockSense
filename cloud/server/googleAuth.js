@@ -1,36 +1,34 @@
-var { google } = require("googleapis");
+const { google } = require("googleapis");
+const serviceAccount = require("./serviceAccountKey.json");
 
-// Load the service account key JSON file.
-var serviceAccount = require("./serviceAccountKey.json");
-
-// Define the required scopes.
-var scopes = [
+const scopes = [
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/firebase.database",
 ];
 
-// Authenticate a JWT client with the service account.
-var jwtClient = new google.auth.JWT(
+const jwtClient = new google.auth.JWT(
   serviceAccount.client_email,
   null,
   serviceAccount.private_key,
   scopes
 );
 
-// Export a function that returns a promise resolving to the access token
-module.exports = new Promise((resolve, reject) => {
-  jwtClient.authorize(function (error, tokens) {
-    if (error) {
-      console.log("Error making request to generate access token:", error);
-      reject(error);
-    } else if (tokens.access_token === null) {
-      console.log(
-        "Provided service account does not have permission to generate access tokens"
-      );
-      reject(new Error("No access token generated"));
-    } else {
-      var accessToken = tokens.access_token;
-      resolve(accessToken);
-    }
-  });
-});
+let cachedToken = null;
+let tokenExpiry = null;
+
+async function getAccessToken() {
+  if (cachedToken && tokenExpiry && Date.now() < tokenExpiry - 60000) {
+    return cachedToken;
+  }
+
+  const tokens = await jwtClient.authorize();
+  if (tokens.access_token) {
+    cachedToken = tokens.access_token;
+    tokenExpiry = tokens.expiry_date;
+    return cachedToken;
+  } else {
+    throw new Error("Failed to obtain access token");
+  }
+}
+
+module.exports = getAccessToken;
