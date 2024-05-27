@@ -26,20 +26,20 @@ client.on("message", async (topic, message) => {
   const match = topic.match(/^locks\/([^/]+)\/state$/);
   if (match) {
     const lockId = match[1];
-    const newValue = message.toString();
+    const payload = message.toString();
 
-    if (!isValidLockState(newValue)) {
+    if (!isValidLockState(payload)) {
       console.error(
-        `Invalid lock state detected. oldValue: ${oldValue}, newValue: ${newValue}`
+        `Invalid lock state detected. payload: ${payload}`
       );
       return;
     }
 
     const firebaseUrl = `${process.env.FIREBASE_BASE_URL}/locks/${lockId}/state.json`;
-    const data = `"${newValue}"`;
+    const data = `"${payload}"`;
 
     try {
-      const token = await getAccessToken;
+      const token = await getAccessToken();
       await axios.put(firebaseUrl, data, {
         headers: {
           "Content-Type": "application/json",
