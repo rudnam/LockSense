@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:locksense/pages/dashboard_page.dart';
 import 'package:locksense/pages/info_page.dart';
 import 'package:locksense/pages/notification_page.dart';
+import 'package:locksense/services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,6 +17,7 @@ class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser;
 
   void signUserOut() {
+    AuthService().signOutWithGoogle();
     FirebaseAuth.instance.signOut();
   }
 
