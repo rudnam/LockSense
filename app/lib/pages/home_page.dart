@@ -16,8 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late FirebaseService firebaseService;
   var currentPageIndex = 0;
-  // final user = FirebaseAuth.instance.currentUser;
-  final user = {"uid": "demo-user", "displayName": "Demo User"};
+  User? user = FirebaseAuth.instance.currentUser;
   List<Map<String, dynamic>> lockItems = [];
   List<Map<String, dynamic>> notifications = [];
 
@@ -25,23 +24,25 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    firebaseService.getLocks(user['uid']!).then((locks) {
-      setState(() {
-        lockItems = locks;
+
+    if (user != null) {
+      firebaseService.getLocks(user!.uid).then((locks) {
+        setState(() {
+          lockItems = locks;
+        });
+        for (var lock in locks) {
+          addLockStateListener(lock['id']);
+        }
       });
 
-      for (var lock in locks) {
-        addLockStateListener(lock['id']);
-      }
-    });
-
-    firebaseService.addNotificationListener(user['uid']!, (notifs) {
-      if (mounted) {
-        setState(() {
-          notifications = notifs ?? [];
-        });
-      }
-    });
+      firebaseService.addNotificationListener(user!.uid, (notifs) {
+        if (mounted) {
+          setState(() {
+            notifications = notifs ?? [];
+          });
+        }
+      });
+    }
   }
 
   void addLockStateListener(String lockId) {
@@ -81,11 +82,156 @@ class _HomePageState extends State<HomePage> {
   }
 
   void clearNotifications() async {
-    setState(() {});
-    await firebaseService.clearNotifications(user['uid']!);
+    await firebaseService.clearNotifications(user!.uid);
     setState(() {
       notifications = [];
     });
+  }
+
+  Future<void> addNewLock(String lockId, String lockName) async {
+    bool lockExists = await firebaseService.checkIfExists("locks/$lockId");
+    bool alreadyAdded =
+        await firebaseService.checkIfExists("users/${user!.uid}/locks/$lockId");
+    if (lockExists) {
+      _showSnackbar("Could not add lock. Lock already existing.");
+      return;
+    } else if (alreadyAdded) {
+      _showSnackbar("Could not add lock. Lock is already added.");
+      return;
+    } else if (lockName == '' || lockId == '') {
+      _showSnackbar("Could not add lock. Please fill in all fields.");
+    }
+
+    Object newLock = {
+      "id": lockId,
+      "ownerId": user!.uid,
+      "name": lockName,
+      "status": "unlocked"
+    };
+    await firebaseService.writeData("locks/$lockId", newLock);
+    await firebaseService
+        .updateData("users/${user!.uid}/locks", {lockId: true});
+    firebaseService.getLocks(user!.uid).then((locks) {
+      setState(() {
+        lockItems = locks;
+      });
+    });
+    addLockStateListener(lockId);
+
+    _showSnackbar("Successfully added lock.");
+  }
+
+  Future<void> addExistingLock(String lockId) async {
+    bool lockExists = await firebaseService.checkIfExists("locks/$lockId");
+    bool alreadyAdded =
+        await firebaseService.checkIfExists("users/${user!.uid}/locks/$lockId");
+
+    if (alreadyAdded) {
+      _showSnackbar("Could not add lock. Lock is already added.");
+    } else if (!lockExists) {
+      _showSnackbar("Could not add lock. Lock does not exist.");
+    } else if (lockId == '') {
+      _showSnackbar("Could not add lock. Please fill in all fields.");
+    } else {
+      await firebaseService
+          .updateData("users/${user!.uid}/locks", {lockId: true});
+      await firebaseService
+          .updateData("locks/$lockId/sharedUserIds", {user!.uid: true});
+
+      firebaseService.getLocks(user!.uid).then((locks) {
+        setState(() {
+          lockItems = locks;
+        });
+      });
+      addLockStateListener(lockId);
+
+      _showSnackbar("Successfully added lock.");
+    }
+  }
+
+  void handleAddLockButtonClick() {
+    TextEditingController lockNameController = TextEditingController();
+    TextEditingController lockIdController = TextEditingController();
+    bool isNewLock = false;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Add Lock'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ToggleButtons(
+                    isSelected: [!isNewLock, isNewLock],
+                    onPressed: (int index) {
+                      setState(() {
+                        isNewLock = index == 1;
+                      });
+                    },
+                    constraints: const BoxConstraints.expand(width: 120),
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text('Existing'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text('New'),
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    controller: lockIdController,
+                    decoration: const InputDecoration(
+                      labelText: 'Lock ID',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Visibility(
+                    visible: isNewLock,
+                    child: TextFormField(
+                      controller: lockNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Lock Name',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Add'),
+                  onPressed: () async {
+                    String lockName = lockNameController.text;
+                    String lockId = lockIdController.text;
+                    try {
+                      if (lockId != '' && isNewLock) {
+                        if (lockName != '') {
+                          await addNewLock(lockId, lockName);
+                        }
+                      } else {
+                        await addExistingLock(lockId);
+                      }
+                    } catch (err) {
+                      _showSnackbar("Error adding lock: ${err.toString()}");
+                    }
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void signUserOut() {
@@ -123,6 +269,13 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         child: page,
       ),
+      floatingActionButton: currentPageIndex == 1
+          ? FloatingActionButton(
+              onPressed: handleAddLockButtonClick,
+              tooltip: 'Add Lock',
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {

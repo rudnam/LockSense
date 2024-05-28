@@ -47,6 +47,19 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void signInWithDemo() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return const Center(child: CircularProgressIndicator());
+        });
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: "demo@gmail.com", password: "demopassword");
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   void showErrorMessage(String errorMessage) {
     showDialog(
       context: context,
@@ -149,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 25.0),
                       child: Row(
@@ -163,7 +176,28 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: TextButton(
+                        onPressed: () => signInWithDemo(),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 15.0),
+                          side: BorderSide(
+                              color: colorScheme.primary, width: 0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text(
+                          'Demo User',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: TextButton.icon(

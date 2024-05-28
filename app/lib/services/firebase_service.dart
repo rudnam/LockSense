@@ -28,8 +28,17 @@ class FirebaseService {
     }
   }
 
+  Future<bool> checkIfExists(String path) async {
+    DataSnapshot snapshot = await _firebaseDatabase.ref().child(path).get();
+    return snapshot.exists;
+  }
+
   Future<void> writeData(String path, dynamic newData) async {
     await _firebaseDatabase.ref().child(path).set(newData);
+  }
+
+  Future<void> updateData(String path, dynamic newData) async {
+    await _firebaseDatabase.ref().child(path).update(newData);
   }
 
   Future<Object?> getData(String path) async {
