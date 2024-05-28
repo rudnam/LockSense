@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:locksense/pages/dashboard_page.dart';
 import 'package:locksense/pages/info_page.dart';
@@ -19,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   User? user = FirebaseAuth.instance.currentUser;
   List<Map<String, dynamic>> lockItems = [];
   List<Map<String, dynamic>> notifications = [];
+  List<StreamSubscription<DatabaseEvent>> listeners = [];
 
   @override
   void initState() {
@@ -35,18 +39,21 @@ class _HomePageState extends State<HomePage> {
         }
       });
 
-      firebaseService.addNotificationListener(user!.uid, (notifs) {
+      var sub = firebaseService.addNotificationListener(user!.uid, (notifs) {
         if (mounted) {
           setState(() {
             notifications = notifs ?? [];
           });
         }
       });
+      setState(() {
+        listeners.add(sub);
+      });
     }
   }
 
   void addLockStateListener(String lockId) {
-    firebaseService.addLockStatusListener(lockId, (lockStatus) {
+    var sub = firebaseService.addLockStatusListener(lockId, (lockStatus) {
       if (mounted) {
         setState(() {
           final lockItem = lockItems.firstWhere((lock) => lock['id'] == lockId,
@@ -60,6 +67,9 @@ class _HomePageState extends State<HomePage> {
           lockItem['status'] = lockStatus;
         });
       }
+    });
+    setState(() {
+      listeners.add(sub);
     });
   }
 
@@ -173,11 +183,13 @@ class _HomePageState extends State<HomePage> {
                     constraints: const BoxConstraints.expand(width: 120),
                     children: const [
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
                         child: Text('Existing'),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
                         child: Text('New'),
                       ),
                     ],
@@ -234,7 +246,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void signUserOut() {
+  Future<void> signUserOut() async {
+    for (final listener in listeners) {
+      await listener.cancel();
+    }
     AuthService().signOutWithGoogle();
     FirebaseAuth.instance.signOut();
   }

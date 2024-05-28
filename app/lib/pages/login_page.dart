@@ -154,7 +154,7 @@ class _LoginPageState extends State<LoginPage> {
                           padding: const EdgeInsets.symmetric(vertical: 15.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
-                          ), // Text color
+                          ),
                         ),
                         child: const Text(
                           'Sign in',
@@ -182,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: TextButton(
                         onPressed: () => signInWithDemo(),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15.0),
+                          padding: const EdgeInsets.symmetric(vertical: 17.0),
                           side: BorderSide(
                               color: colorScheme.primary, width: 0.5),
                           shape: RoundedRectangleBorder(
@@ -223,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

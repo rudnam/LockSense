@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io' show Platform;
@@ -52,16 +54,20 @@ class FirebaseService {
     }
   }
 
-  void addLockStatusListener(String lockId, void Function(String) listener) {
-    _firebaseDatabase.ref('locks/$lockId/status').onValue.listen((event) {
+  StreamSubscription<DatabaseEvent> addLockStatusListener(
+      String lockId, void Function(String) listener) {
+    return _firebaseDatabase
+        .ref('locks/$lockId/status')
+        .onValue
+        .listen((event) {
       final lockStatus = event.snapshot.value.toString();
       listener(lockStatus);
     });
   }
 
-  void addNotificationListener(
+  StreamSubscription<DatabaseEvent> addNotificationListener(
       String userId, void Function(List<Map<String, dynamic>>?) listener) {
-    _firebaseDatabase
+    return _firebaseDatabase
         .ref('users/$userId/notifications')
         .onValue
         .listen((event) {
