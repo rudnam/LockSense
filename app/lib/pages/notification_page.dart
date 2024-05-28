@@ -1,46 +1,21 @@
-// notification_page.dart
 import 'package:flutter/material.dart';
 import '../widgets/notification_list.dart';
-import '../services/firebase_service.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  final List<Map<String, dynamic>> notifications;
+  final VoidCallback clearNotifications;
+
+  const NotificationPage({
+    super.key,
+    required this.notifications,
+    required this.clearNotifications,
+  });
 
   @override
   State<NotificationPage> createState() => _NotificationPageState();
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  late FirebaseService firebaseService;
-  List<Map<String, dynamic>>? _notifications;
-  bool isLoading = true;
-  String userId = "demo-user";
-
-  @override
-  void initState() {
-    super.initState();
-    firebaseService = FirebaseService();
-    firebaseService.addNotificationListener(userId, (notifications) {
-      if (mounted) {
-        setState(() {
-          _notifications = notifications;
-          isLoading = false;
-        });
-      }
-    });
-  }
-
-  void _clearNotifications() async {
-    setState(() {
-      isLoading = true;
-    });
-    await firebaseService.clearNotifications(userId);
-    setState(() {
-      _notifications = [];
-      isLoading = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -66,23 +41,21 @@ class _NotificationPageState extends State<NotificationPage> {
                   children: [
                     const Spacer(),
                     TextButton(
-                      onPressed: _clearNotifications,
+                      onPressed: widget.clearNotifications,
                       child: const Text('Clear'),
                     ),
                   ],
                 ),
               ),
-              isLoading
-                  ? const CircularProgressIndicator()
-                  : _notifications != null && _notifications!.isNotEmpty
-                      ? Expanded(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            child: NotificationList(
-                                notifications: _notifications!),
-                          ),
-                        )
-                      : const Text('No notifications available'),
+              widget.notifications.isNotEmpty
+                  ? Expanded(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: NotificationList(
+                            notifications: widget.notifications),
+                      ),
+                    )
+                  : const Text('No notifications available'),
             ],
           ),
         );
