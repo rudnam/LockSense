@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import { NotificationType } from "./types";
-import { LockState } from "./types";
+import { LockStatus } from "./types";
 
 const getDatabase = async (path: string) => {
   const ref = admin.database().ref(path);
@@ -76,7 +76,7 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-const isValidLockState = (str: string): str is LockState => {
+const isValidLockStatus = (str: string): str is LockStatus => {
   return ["unlocked", "locked", "unlocking", "locking"].includes(str);
 };
 
@@ -86,5 +86,5 @@ export default {
   pushDatabase,
   sendNotification,
   capitalize,
-  isValidLockState,
+  isValidLockStatus,
 };

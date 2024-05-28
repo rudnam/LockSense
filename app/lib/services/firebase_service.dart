@@ -43,10 +43,10 @@ class FirebaseService {
     }
   }
 
-  void addLockStateListener(String lockId, void Function(String) listener) {
-    _firebaseDatabase.ref('locks/$lockId/state').onValue.listen((event) {
-      final lockState = event.snapshot.value.toString();
-      listener(lockState);
+  void addLockStatusListener(String lockId, void Function(String) listener) {
+    _firebaseDatabase.ref('locks/$lockId/status').onValue.listen((event) {
+      final lockStatus = event.snapshot.value.toString();
+      listener(lockStatus);
     });
   }
 
@@ -75,5 +75,35 @@ class FirebaseService {
     DatabaseReference ref =
         _firebaseDatabase.ref('users/$userId/notifications');
     await ref.remove();
+  }
+
+  Future<List<Map<String, dynamic>>> getLocks(String userId) async {
+    DataSnapshot snapshot =
+        await _firebaseDatabase.ref('users/$userId/locks').get();
+    List<Map<String, dynamic>> userLocks = [];
+
+    if (snapshot.exists) {
+      Map<dynamic, dynamic>? lockIds = snapshot.value as Map<dynamic, dynamic>?;
+
+      if (lockIds != null) {
+        await Future.forEach(lockIds.keys, (lockId) async {
+          DataSnapshot lockSnapshot =
+              await _firebaseDatabase.ref('locks/$lockId').get();
+
+          if (lockSnapshot.exists) {
+            Map<dynamic, dynamic>? lockInfo =
+                lockSnapshot.value as Map<dynamic, dynamic>?;
+
+            if (lockInfo != null) {
+              Map<String, dynamic> formattedLockInfo =
+                  Map<String, dynamic>.from(lockInfo);
+              userLocks.add(formattedLockInfo);
+            }
+          }
+        });
+      }
+    }
+
+    return userLocks;
   }
 }

@@ -1,3 +1,5 @@
-export type NotificationType = "unlocked" | "locked" | "failure" | "default";
+export type NotificationType = "unlocked" | "locked" | "error" | "default";
 
-export type LockState = "unlocked" | "locked" | "unlocking" | "locking";
+export type LockStatus = "unlocked" | "locked" | "unlocking" | "locking";
+
+export type LockCommand = "unlock" | "lock";

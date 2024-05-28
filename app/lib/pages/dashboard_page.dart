@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/firebase_service.dart';
-import '../widgets/state_list.dart';
+import '../widgets/lock_list.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -12,24 +12,36 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late FirebaseService firebaseService;
   final userId = "demo-user";
-  final lockId = "-NycrH2cYavPQDTVmfKp";
-  List<Map<String, dynamic>> states = [];
-
-  late String _lockState = "...";
+  List<Map<String, dynamic>> lockItems = [];
 
   @override
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    firebaseService.addLockStateListener(lockId, (lockState) {
+    firebaseService.getLocks(userId).then((locks) {
+      setState(() {
+        lockItems = locks;
+      });
+
+      for (var lock in locks) {
+        addLockStateListener(lock['id']);
+      }
+    });
+  }
+
+  void addLockStateListener(String lockId) {
+    firebaseService.addLockStatusListener(lockId, (lockStatus) {
       if (mounted) {
         setState(() {
-          if (_lockState == 'unlocking' && lockState == 'locked') {
+          final lockItem = lockItems.firstWhere((lock) => lock['id'] == lockId,
+              orElse: () => {});
+          if (lockItem['status'] == 'unlocking' && lockStatus == 'locked') {
             _showSnackbar("Unlock attempt failed.");
-          } else if (_lockState == 'locking' && lockState == 'unlocked') {
+          } else if (lockItem['status'] == 'locking' &&
+              lockStatus == 'unlocked') {
             _showSnackbar("Lock attempt failed.");
           }
-          _lockState = lockState;
+          lockItem['status'] = lockStatus;
         });
       }
     });
@@ -46,21 +58,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> lockStates = [
-      {
-        'name': 'Lock 1',
-        'id': lockId,
-        'ownerUID': 'demo-user',
-        'state': _lockState,
-      },
-    ];
-
-    void handleButtonClick(Map<String, dynamic> state) async {
-      String newState = state['state'] == 'locked' ? 'unlocking' : 'locking';
+    void handleButtonClick(Map<String, dynamic> lockItem) async {
+      String newStatus =
+          lockItem['status'] == 'locked' ? 'unlocking' : 'locking';
       setState(() {
-        state['state'] = newState;
+        lockItem['status'] = newStatus;
       });
-      await firebaseService.writeData("locks/${state['id']}/state", newState);
+      await firebaseService.writeData(
+          "locks/${lockItem['id']}/status", newStatus);
     }
 
     return Center(
@@ -80,8 +85,8 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
-              child: StateList(
-                  states: lockStates, handleButtonClick: handleButtonClick))
+              child: LockList(
+                  lockItems: lockItems, handleButtonClick: handleButtonClick))
         ],
       ),
     );

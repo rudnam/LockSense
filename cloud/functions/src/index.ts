@@ -5,8 +5,9 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 import mqttService from "./services/mqtt";
-import timerService, { timerType } from "./services/timer";
+import timerService from "./services/lockTimer";
 import utils from "./utils";
+import { LockCommand } from "./types";
 
 const lockTimeout = 15; // Time (in seconds) to wait for locking/unlocking acknowledgement
 
@@ -14,7 +15,7 @@ setGlobalOptions({ region: "asia-southeast1" });
 admin.initializeApp();
 
 export const handleLockUpdate = onValueUpdated(
-  { ref: "/locks/{lockId}/state" },
+  { ref: "/locks/{lockId}/status" },
   async (event) => {
     const lockId = event.params.lockId;
     const snapshotBefore = event.data.before;
@@ -23,11 +24,11 @@ export const handleLockUpdate = onValueUpdated(
     const newValue: string = snapshotAfter.val();
 
     if (
-      !utils.isValidLockState(oldValue) ||
-      !utils.isValidLockState(newValue)
+      !utils.isValidLockStatus(oldValue) ||
+      !utils.isValidLockStatus(newValue)
     ) {
       logger.error(
-        `Invalid lock state detected. oldValue: ${oldValue}, newValue: ${newValue}`
+        `Invalid lock status detected. oldValue: ${oldValue}, newValue: ${newValue}`
       );
       return;
     }
@@ -38,7 +39,7 @@ export const handleLockUpdate = onValueUpdated(
 
     if (oldValue !== newValue) {
       logger.log(
-        `Detected lock state change for ${lockId}: ${oldValue} -> ${newValue}`
+        `Detected lock status change for ${lockId}: ${oldValue} -> ${newValue}`
       );
       const lockData = (await utils.getDatabase(`/locks/${lockId}`)) as {
         [key: string]: unknown;
@@ -47,7 +48,8 @@ export const handleLockUpdate = onValueUpdated(
       const lockOwnerId = lockData["ownerId"] as string;
 
       if (fromApp) {
-        mqttService.publish(`locks/${lockId}/state`, newValue.toString());
+        const command = newValue === "locking" ? "lock" : "unlock";
+        mqttService.publish(`locks/${lockId}/command`, command);
       }
 
       switch (newValue) {
@@ -61,7 +63,7 @@ export const handleLockUpdate = onValueUpdated(
           clearTimer("unlock", lockId);
           if (oldValue !== "locking") {
             await utils.sendNotification(lockOwnerId, {
-              title: `${lockName}'s state changed!`,
+              title: `${lockName}'s status changed!`,
               body: `${lockName} is now ${newValue}`,
             });
           }
@@ -70,43 +72,47 @@ export const handleLockUpdate = onValueUpdated(
           clearTimer("lock", lockId);
           if (oldValue !== "unlocking") {
             await utils.sendNotification(lockOwnerId, {
-              title: `${lockName}'s state changed!`,
+              title: `${lockName}'s status changed!`,
               body: `${lockName} is now ${newValue}`,
             });
           }
           break;
         default:
-          logger.error(`Received undefined lock state: ${newValue}`);
+          logger.error(`Received undefined lock status: ${newValue}`);
       }
     }
   }
 );
 
-const startTimer = (type: timerType, lockId: string) => {
+const startTimer = (command: LockCommand, lockId: string) => {
   const timer = setTimeout(async () => {
     logger.log(
       `${utils.capitalize(
-        type
-      )} confirmation not received in time for lock ${lockId}. Cancelling ${type} attempt.`
+        command
+      )} confirmation not received in time for lock ${lockId}. Cancelling ${command} attempt.`
     );
     mqttService.publish(
-      `locks/${lockId}/state`,
-      type === "unlock" ? "locked" : "unlocked"
+      `locks/${lockId}/command`,
+      command === "unlock" ? "lock" : "unlock"
     );
-    timerService.remove(type, lockId);
+    mqttService.publish(
+      `locks/${lockId}/status`,
+      command === "unlock" ? "locked" : "unlocked"
+    );
+    timerService.remove(command, lockId);
   }, lockTimeout * 1000);
-  logger.log(`Starting ${type} attempt for lock ${lockId}...`);
-  timerService.set(type, lockId, timer);
+  logger.log(`Starting ${command} attempt for lock ${lockId}...`);
+  timerService.set(command, lockId, timer);
 };
 
-const clearTimer = (type: timerType, lockId: string) => {
-  if (timerService.has(type, lockId)) {
+const clearTimer = (command: LockCommand, lockId: string) => {
+  if (timerService.has(command, lockId)) {
     logger.log(
       `${utils.capitalize(
-        type
-      )} confirmation received. Clearing timer for ${type}.`
+        command
+      )} confirmation received. Clearing timer for ${command}.`
     );
-    clearTimeout(timerService.get(type, lockId));
-    timerService.remove(type, lockId);
+    clearTimeout(timerService.get(command, lockId));
+    timerService.remove(command, lockId);
   }
 };
