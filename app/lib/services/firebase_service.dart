@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io' show Platform;
@@ -15,21 +17,30 @@ class FirebaseService {
   final FirebaseDatabase _firebaseDatabase = FirebaseDatabase.instance;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  Future<void> initNotifications() async {
+  Future<void> initNotifications(String userId) async {
     if (kIsWeb) return;
 
     if (Platform.isAndroid) {
       await _firebaseMessaging.requestPermission();
       final fCMToken = await _firebaseMessaging.getToken();
-      await _firebaseDatabase.ref().child("FCMToken").set(fCMToken);
+      await writeData("users/$userId/FCMToken", fCMToken);
       FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     } else {
       print("This platform doesn't support push notifications.");
     }
   }
 
+  Future<bool> checkIfExists(String path) async {
+    DataSnapshot snapshot = await _firebaseDatabase.ref().child(path).get();
+    return snapshot.exists;
+  }
+
   Future<void> writeData(String path, dynamic newData) async {
     await _firebaseDatabase.ref().child(path).set(newData);
+  }
+
+  Future<void> updateData(String path, dynamic newData) async {
+    await _firebaseDatabase.ref().child(path).update(newData);
   }
 
   Future<Object?> getData(String path) async {
@@ -43,16 +54,20 @@ class FirebaseService {
     }
   }
 
-  void addLockStatusListener(String lockId, void Function(String) listener) {
-    _firebaseDatabase.ref('locks/$lockId/status').onValue.listen((event) {
+  StreamSubscription<DatabaseEvent> addLockStatusListener(
+      String lockId, void Function(String) listener) {
+    return _firebaseDatabase
+        .ref('locks/$lockId/status')
+        .onValue
+        .listen((event) {
       final lockStatus = event.snapshot.value.toString();
       listener(lockStatus);
     });
   }
 
-  void addNotificationListener(
+  StreamSubscription<DatabaseEvent> addNotificationListener(
       String userId, void Function(List<Map<String, dynamic>>?) listener) {
-    _firebaseDatabase
+    return _firebaseDatabase
         .ref('users/$userId/notifications')
         .onValue
         .listen((event) {

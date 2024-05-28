@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:locksense/pages/auth_page.dart';
-import 'package:locksense/services/firebase_service.dart';
 import './theme/style.dart';
 import './firebase_options.dart';
 
@@ -17,7 +16,6 @@ class MyApp extends StatelessWidget {
   Future<void> _initializeFirebase() async {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
-    await FirebaseService().initNotifications();
   }
 
   @override

@@ -46,11 +46,19 @@ export const handleLockUpdate = onValueUpdated(
       };
       const lockName = lockData["name"] as string;
       const lockOwnerId = lockData["ownerId"] as string;
+      const sharedUserIdsObj =
+        lockData["sharedUserIds"] ?? ({} as { [key: string]: boolean });
+      const sharedUserIds = Object.keys(sharedUserIdsObj);
 
       if (fromApp) {
         const command = newValue === "locking" ? "lock" : "unlock";
         mqttService.publish(`locks/${lockId}/command`, command);
       }
+
+      const message = {
+        title: `${lockName}'s status changed!`,
+        body: `${lockName} is now ${newValue}`,
+      };
 
       switch (newValue) {
         case "unlocking":
@@ -62,19 +70,13 @@ export const handleLockUpdate = onValueUpdated(
         case "unlocked":
           clearTimer("unlock", lockId);
           if (oldValue !== "locking") {
-            await utils.sendNotification(lockOwnerId, {
-              title: `${lockName}'s status changed!`,
-              body: `${lockName} is now ${newValue}`,
-            });
+            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], message);
           }
           break;
         case "locked":
           clearTimer("lock", lockId);
           if (oldValue !== "unlocking") {
-            await utils.sendNotification(lockOwnerId, {
-              title: `${lockName}'s status changed!`,
-              body: `${lockName} is now ${newValue}`,
-            });
+            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], message);
           }
           break;
         default:
