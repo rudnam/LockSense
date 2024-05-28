@@ -46,7 +46,11 @@ const sendNotification = async (
     body: string;
   }
 ) => {
-  const token = (await getDatabase("FCMToken")) as string;
+  const token = ((await getDatabase(`users/${userId}/FCMToken`)) ??
+    "") as string;
+
+  if (!token) return;
+
   const type: NotificationType = information.body.includes("now unlocked")
     ? "unlocked"
     : information.body.includes("now locked")
@@ -72,6 +76,15 @@ const sendNotification = async (
   );
 };
 
+const notifyUsers = async (
+  userIds: string[],
+  message: { title: string; body: string }
+) => {
+  for (const userId of userIds) {
+    await sendNotification(userId, message);
+  }
+};
+
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
@@ -85,6 +98,7 @@ export default {
   setDatabase,
   pushDatabase,
   sendNotification,
+  notifyUsers,
   capitalize,
   isValidLockStatus,
 };
