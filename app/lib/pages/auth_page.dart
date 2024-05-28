@@ -21,7 +21,7 @@ class _AuthPageState extends State<AuthPage> {
   void initState() {
     super.initState();
     firebaseService = FirebaseService();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
       setState(() {
         this.user = user;
       });
@@ -30,6 +30,7 @@ class _AuthPageState extends State<AuthPage> {
       } else {
         print('User is signed in!');
         storeUserData(user);
+        await FirebaseService().initNotifications(user.uid);
       }
     });
   }
