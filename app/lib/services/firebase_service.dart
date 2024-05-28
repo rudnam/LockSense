@@ -15,13 +15,13 @@ class FirebaseService {
   final FirebaseDatabase _firebaseDatabase = FirebaseDatabase.instance;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  Future<void> initNotifications() async {
+  Future<void> initNotifications(String userId) async {
     if (kIsWeb) return;
 
     if (Platform.isAndroid) {
       await _firebaseMessaging.requestPermission();
       final fCMToken = await _firebaseMessaging.getToken();
-      await _firebaseDatabase.ref().child("FCMToken").set(fCMToken);
+      await writeData("users/$userId/FCMToken", fCMToken);
       FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     } else {
       print("This platform doesn't support push notifications.");
