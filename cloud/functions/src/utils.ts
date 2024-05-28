@@ -39,50 +39,71 @@ const pushDatabase = async (path: string, value: unknown) => {
   });
 };
 
-const sendNotification = async (
-  userId: string,
+const sendPushNotification = async (
+  token: string,
   information: {
     title: string;
     body: string;
   }
 ) => {
-  const token = ((await getDatabase(`users/${userId}/FCMToken`)) ??
-    "") as string;
-
-  if (!token) return;
-
-  const type: NotificationType = information.body.includes("now unlocked")
-    ? "unlocked"
-    : information.body.includes("now locked")
-    ? "locked"
-    : "default";
-
   const payload = {
     token: token,
     notification: {
       ...information,
     },
   };
+
+  await admin.messaging().send(payload);
+};
+
+const updateNotifications = async (
+  userId: string,
+  information: { title: string; body: string }
+) => {
+  const type: NotificationType = information.body.includes("now unlocked")
+    ? "unlocked"
+    : information.body.includes("now locked")
+    ? "locked"
+    : "default";
+
   const notificationObj = {
     ...information,
     timestamp: Date.now(),
     type: type,
   };
 
-  await admin.messaging().send(payload);
   await pushDatabase(`/users/${userId}/notifications`, notificationObj);
-  logger.log(
-    `Successfully sent push notification, title: ${information.title}`
-  );
 };
 
 const notifyUsers = async (
   userIds: string[],
   message: { title: string; body: string }
 ) => {
-  for (const userId of userIds) {
-    await sendNotification(userId, message);
-  }
+  const tokensSet = new Set<string>();
+
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const token = ((await getDatabase(`users/${userId}/FCMToken`)) ??
+        "") as string;
+      if (token) {
+        tokensSet.add(token);
+      }
+    })
+  );
+
+  const tokens = Array.from(tokensSet);
+
+  await Promise.all(
+    tokens.map(async (token) => {
+      await sendPushNotification(token, message);
+    })
+  );
+
+  await Promise.all(
+    userIds.map(async (userId) => {
+      await updateNotifications(userId, message);
+    })
+  );
 };
 
 const capitalize = (str: string) => {
@@ -97,7 +118,7 @@ export default {
   getDatabase,
   setDatabase,
   pushDatabase,
-  sendNotification,
+  sendNotification: sendPushNotification,
   notifyUsers,
   capitalize,
   isValidLockStatus,
