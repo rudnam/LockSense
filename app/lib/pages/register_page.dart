@@ -55,9 +55,6 @@ class _RegisterPageState extends State<RegisterPage> {
       }
       showErrorMessage(errorMessage);
     }
-    if (mounted) {
-      Navigator.pop(context);
-    }
   }
 
   void showErrorMessage(String errorMessage) {
