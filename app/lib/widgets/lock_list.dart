@@ -4,12 +4,14 @@ class LockList extends StatelessWidget {
   final bool isLoading;
   final List<Map<String, dynamic>> lockItems;
   final Function(Map<String, dynamic>) handleButtonClick;
+  final Function(Map<String, dynamic>) handleIconClick;
 
   const LockList(
       {super.key,
       required this.isLoading,
       required this.lockItems,
-      required this.handleButtonClick});
+      required this.handleButtonClick,
+      required this.handleIconClick});
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +24,18 @@ class LockList extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final lockItem = lockItems[index];
                   return ListTile(
-                    leading: Icon(
-                      lockItem['status'] == "locked" ||
-                              lockItem['status'] == "unlocking"
-                          ? Icons.lock
-                          : Icons.lock_open,
-                      color: Colors.green,
+                    leading: IconButton(
+                      icon: Icon(
+                        lockItem['status'] == "locked" ||
+                                lockItem['status'] == "unlocking"
+                            ? Icons.lock
+                            : Icons.lock_open,
+                        color: Colors.green,
+                      ),
+                      onPressed: () {
+                        handleIconClick(lockItem);
+                      },
+                      splashRadius: 24,
                     ),
                     title: Text(
                         '${lockItem['name']} status: ${lockItem['status']}'),

@@ -5,12 +5,14 @@ import '../widgets/lock_list.dart';
 class DashboardPage extends StatefulWidget {
   final bool isLoading;
   final List<Map<String, dynamic>> lockItems;
+  final Function(Map<String, dynamic>) handleLockIconClick;
   final Function(Map<String, dynamic>) handleLockButtonClick;
 
   const DashboardPage({
     super.key,
     required this.isLoading,
     required this.lockItems,
+    required this.handleLockIconClick,
     required this.handleLockButtonClick,
   });
 
@@ -48,6 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: LockList(
                   isLoading: widget.isLoading,
                   lockItems: widget.lockItems,
+                  handleIconClick: widget.handleLockIconClick,
                   handleButtonClick: widget.handleLockButtonClick))
         ],
       ),
