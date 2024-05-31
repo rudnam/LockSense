@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void addLockStateListener(String lockId) {
-    var sub = firebaseService.addLockStatusListener(lockId, (lockStatus) {
+    var statusSub = firebaseService.addLockStatusListener(lockId, (lockStatus) {
       if (mounted) {
         setState(() {
           final lockItem = lockItems.firstWhere((lock) => lock['id'] == lockId,
@@ -73,8 +73,18 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+    var nameSub = firebaseService.addLockNameListener(lockId, (lockName) {
+      if (mounted) {
+        setState(() {
+          final lockItem = lockItems.firstWhere((lock) => lock['id'] == lockId,
+              orElse: () => {});
+          lockItem['name'] = lockName;
+        });
+      }
+    });
     setState(() {
-      listeners.add(sub);
+      listeners.add(statusSub);
+      listeners.add(nameSub);
     });
   }
 
@@ -96,6 +106,65 @@ class _HomePageState extends State<HomePage> {
         "locks/${lockItem['id']}/status", newStatus);
     await firebaseService.writeData(
         "locks/${lockItem['id']}/lastCommandBy", user!.uid);
+  }
+
+  void handleLockIconClick(Map<String, dynamic> lockItem) async {
+    TextEditingController lockNameController =
+        TextEditingController(text: lockItem['name']);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Edit Lock'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    readOnly: true,
+                    initialValue: lockItem['id'],
+                    decoration: const InputDecoration(
+                      labelText: 'Lock ID',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: lockNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Lock Name',
+                    ),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Save'),
+                  onPressed: () async {
+                    String lockName = lockNameController.text;
+                    try {
+                      await firebaseService.writeData(
+                          "locks/${lockItem['id']}/name", lockName);
+                    } catch (err) {
+                      _showSnackbar("Couldn't update lock. ${err.toString()}");
+                    }
+
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void clearNotifications() async {
@@ -271,6 +340,7 @@ class _HomePageState extends State<HomePage> {
         page = DashboardPage(
             isLoading: isLoading,
             lockItems: lockItems,
+            handleLockIconClick: handleLockIconClick,
             handleLockButtonClick: handleLockButtonClick);
       case 2:
         page = NotificationPage(

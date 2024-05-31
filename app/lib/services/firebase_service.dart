@@ -65,6 +65,14 @@ class FirebaseService {
     });
   }
 
+  StreamSubscription<DatabaseEvent> addLockNameListener(
+      String lockId, void Function(String) listener) {
+    return _firebaseDatabase.ref('locks/$lockId/name').onValue.listen((event) {
+      final lockName = event.snapshot.value.toString();
+      listener(lockName);
+    });
+  }
+
   StreamSubscription<DatabaseEvent> addNotificationListener(
       String userId, void Function(List<Map<String, dynamic>>?) listener) {
     return _firebaseDatabase
