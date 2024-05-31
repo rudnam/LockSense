@@ -45,7 +45,7 @@ class _AuthPageState extends State<AuthPage> {
         'id': user.uid,
         'uid': user.uid,
         'email': user.email,
-        'displayName': user.displayName ?? '',
+        'displayName': user.displayName ?? user.email!.split('@')[0],
         'locks': {},
         'notifications': {}
       });
