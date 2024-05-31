@@ -67,25 +67,43 @@ export const handleLockUpdate = onValueUpdated(
         case "unlocked": {
           clearTimer("unlock", lockId);
           const isFailedCommand = oldValue === "locking";
+          const isRemoteCommand = oldValue === "unlocking";
+          const remoteCommandById = isRemoteCommand
+            ? await utils.getDatabase(`locks/${lockId}/lastCommandBy`)
+            : null;
+          const remoteCommandByName = isRemoteCommand
+            ? await utils.getDatabase(`users/${remoteCommandById}/displayName`)
+            : null;
 
-          if (!isFailedCommand && oldValue !== "vibrating") {
-            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
-              title: `${lockName} was unlocked!`,
-              body: `Were you expecting anyone to open the door?`,
-            });
-          }
+          if (isFailedCommand || oldValue === "vibrating") break;
+
+          await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
+            title: `${lockName} was unlocked!`,
+            body: isRemoteCommand
+              ? `Remotely unlocked by ${remoteCommandByName}.`
+              : `Were you expecting anyone to open the door?`,
+          });
           break;
         }
         case "locked": {
           clearTimer("lock", lockId);
           const isFailedCommand = oldValue === "unlocking";
+          const isRemoteCommand = oldValue === "locking";
+          const remoteCommandById = isRemoteCommand
+            ? await utils.getDatabase(`locks/${lockId}/lastCommandBy`)
+            : null;
+          const remoteCommandByName = isRemoteCommand
+            ? await utils.getDatabase(`users/${remoteCommandById}/displayName`)
+            : null;
 
-          if (!isFailedCommand && oldValue !== "vibrating") {
-            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
-              title: `${lockName} was locked!`,
-              body: ``,
-            });
-          }
+          if (isFailedCommand || oldValue === "vibrating") break;
+
+          await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
+            title: `${lockName} was locked!`,
+            body: isRemoteCommand
+              ? `Remotely locked by ${remoteCommandByName}.`
+              : ``,
+          });
           break;
         }
         case "vibrating": {
