@@ -190,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         child: Text(
-                          'Demo User',
+                          'Sign in with Demo User',
                           style: TextStyle(
                             color: colorScheme.onSurface,
                           ),

@@ -23,8 +23,11 @@ class NotificationList extends StatelessWidget {
           case 'locked':
             iconData = Icons.lock;
             break;
-          case 'failure':
-            iconData = Icons.access_alarm;
+          case 'warning':
+            iconData = Icons.warning;
+            break;
+          case 'error':
+            iconData = Icons.error;
             break;
           default:
             iconData = Icons.info;
@@ -37,7 +40,9 @@ class NotificationList extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(notification['body']),
+                notification['body'] != ''
+                    ? Text(notification['body'])
+                    : Container(),
                 const SizedBox(height: 5),
                 Text(
                   'Time: ${DateFormat.yMd().add_jms().format(DateTime.fromMillisecondsSinceEpoch(notification['timestamp']))}',
