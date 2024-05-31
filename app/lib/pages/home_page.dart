@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> lockItems = [];
   List<Map<String, dynamic>> notifications = [];
   List<StreamSubscription<DatabaseEvent>> listeners = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -30,6 +31,9 @@ class _HomePageState extends State<HomePage> {
     firebaseService = FirebaseService();
 
     if (user != null) {
+      setState(() {
+        isLoading = true;
+      });
       firebaseService.getLocks(user!.uid).then((locks) {
         setState(() {
           lockItems = locks;
@@ -48,6 +52,7 @@ class _HomePageState extends State<HomePage> {
       });
       setState(() {
         listeners.add(sub);
+        isLoading = false;
       });
     }
   }
@@ -264,9 +269,12 @@ class _HomePageState extends State<HomePage> {
         page = const InfoPage();
       case 1:
         page = DashboardPage(
-            lockItems: lockItems, handleLockButtonClick: handleLockButtonClick);
+            isLoading: isLoading,
+            lockItems: lockItems,
+            handleLockButtonClick: handleLockButtonClick);
       case 2:
         page = NotificationPage(
+          isLoading: isLoading,
           notifications: notifications,
           clearNotifications: clearNotifications,
         );

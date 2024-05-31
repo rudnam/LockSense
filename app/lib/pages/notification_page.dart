@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import '../widgets/notification_list.dart';
 
 class NotificationPage extends StatefulWidget {
+  final bool isLoading;
   final List<Map<String, dynamic>> notifications;
   final VoidCallback clearNotifications;
 
   const NotificationPage({
     super.key,
+    required this.isLoading,
     required this.notifications,
     required this.clearNotifications,
   });
@@ -47,15 +49,17 @@ class _NotificationPageState extends State<NotificationPage> {
                   ],
                 ),
               ),
-              widget.notifications.isNotEmpty
-                  ? Expanded(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 400),
-                        child: NotificationList(
-                            notifications: widget.notifications),
-                      ),
-                    )
-                  : const Text('No notifications available'),
+              widget.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : widget.notifications.isNotEmpty
+                      ? Expanded(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: NotificationList(
+                                notifications: widget.notifications),
+                          ),
+                        )
+                      : const Text('No notifications available'),
             ],
           ),
         );
