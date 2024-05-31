@@ -89,6 +89,8 @@ class _HomePageState extends State<HomePage> {
     });
     await firebaseService.writeData(
         "locks/${lockItem['id']}/status", newStatus);
+    await firebaseService.writeData(
+        "locks/${lockItem['id']}/lastCommandBy", user!.uid);
   }
 
   void clearNotifications() async {
