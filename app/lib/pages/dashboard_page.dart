@@ -3,11 +3,13 @@ import '../services/firebase_service.dart';
 import '../widgets/lock_list.dart';
 
 class DashboardPage extends StatefulWidget {
+  final bool isLoading;
   final List<Map<String, dynamic>> lockItems;
   final Function(Map<String, dynamic>) handleLockButtonClick;
 
   const DashboardPage({
     super.key,
+    required this.isLoading,
     required this.lockItems,
     required this.handleLockButtonClick,
   });
@@ -44,6 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: LockList(
+                  isLoading: widget.isLoading,
                   lockItems: widget.lockItems,
                   handleButtonClick: widget.handleLockButtonClick))
         ],
