@@ -12,7 +12,6 @@ class _InfoPageState extends State<InfoPage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-      // Change text size depending on screen size
       const double widthThreshold = 600;
       TextStyle bodyTextStyle;
       if (constraints.maxWidth < widthThreshold) {
