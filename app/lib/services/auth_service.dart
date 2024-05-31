@@ -9,7 +9,12 @@ class AuthService {
           .setCustomParameters({'prompt': 'select_account'});
       await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? gUser = await GoogleSignIn(
+        scopes: <String>[
+          'email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+        ],
+      ).signIn();
 
       final GoogleSignInAuthentication? gAuth = await gUser?.authentication;
 
