@@ -111,7 +111,7 @@ export const handleLockUpdate = onValueUpdated(
             title: `${lockName} detected vibrations!`,
             body: `Please check your door.`,
           });
-          await utils.setDatabase(`locks/${lockId}/status`, oldValue);
+          mqttService.publish(`locks/${lockId}/command`, "check");
           break;
         }
         default:
