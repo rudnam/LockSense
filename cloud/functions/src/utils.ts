@@ -60,10 +60,12 @@ const updateNotifications = async (
   userId: string,
   information: { title: string; body: string }
 ) => {
-  const type: NotificationType = information.body.includes("now unlocked")
+  const type: NotificationType = information.title.includes("unlocked")
     ? "unlocked"
-    : information.body.includes("now locked")
+    : information.title.includes("locked")
     ? "locked"
+    : information.title.includes("vibration")
+    ? "warning"
     : "default";
 
   const notificationObj = {
@@ -111,7 +113,9 @@ const capitalize = (str: string) => {
 };
 
 const isValidLockStatus = (str: string): str is LockStatus => {
-  return ["unlocked", "locked", "unlocking", "locking"].includes(str);
+  return ["unlocked", "locked", "unlocking", "locking", "vibrating"].includes(
+    str
+  );
 };
 
 export default {

@@ -55,30 +55,47 @@ export const handleLockUpdate = onValueUpdated(
         mqttService.publish(`locks/${lockId}/command`, command);
       }
 
-      const message = {
-        title: `${lockName}'s status changed!`,
-        body: `${lockName} is now ${newValue}`,
-      };
-
       switch (newValue) {
-        case "unlocking":
+        case "unlocking": {
           startTimer("unlock", lockId);
           break;
-        case "locking":
+        }
+        case "locking": {
           startTimer("lock", lockId);
           break;
-        case "unlocked":
+        }
+        case "unlocked": {
           clearTimer("unlock", lockId);
-          if (oldValue !== "locking") {
-            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], message);
+          const isFailedCommand = oldValue === "locking";
+
+          if (!isFailedCommand && oldValue !== "vibrating") {
+            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
+              title: `${lockName} was unlocked!`,
+              body: `Were you expecting anyone to open the door?`,
+            });
           }
           break;
-        case "locked":
+        }
+        case "locked": {
           clearTimer("lock", lockId);
-          if (oldValue !== "unlocking") {
-            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], message);
+          const isFailedCommand = oldValue === "unlocking";
+
+          if (!isFailedCommand && oldValue !== "vibrating") {
+            await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
+              title: `${lockName} was locked!`,
+              body: ``,
+            });
           }
           break;
+        }
+        case "vibrating": {
+          await utils.notifyUsers([lockOwnerId, ...sharedUserIds], {
+            title: `${lockName} detected vibrations!`,
+            body: `Please check your door.`,
+          });
+          await utils.setDatabase(`locks/${lockId}/status`, oldValue);
+          break;
+        }
         default:
           logger.error(`Received undefined lock status: ${newValue}`);
       }

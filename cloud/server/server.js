@@ -54,5 +54,7 @@ client.on("message", async (topic, message) => {
 });
 
 const isValidLockStatus = (str) => {
-  return ["unlocked", "locked", "unlocking", "locking"].includes(str);
+  return ["unlocked", "locked", "unlocking", "locking", "vibrating"].includes(
+    str
+  );
 };
