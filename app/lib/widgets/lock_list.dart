@@ -35,7 +35,6 @@ class LockList extends StatelessWidget {
                       onPressed: () {
                         handleIconClick(lockItem);
                       },
-                      splashRadius: 24,
                     ),
                     title: Text(
                         '${lockItem['name']} status: ${lockItem['status']}'),
